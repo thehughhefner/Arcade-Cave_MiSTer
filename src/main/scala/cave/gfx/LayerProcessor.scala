@@ -79,7 +79,7 @@ class LayerProcessor(index: Int) extends Module {
     val flipped = GPU.screenSize - io.video.pos + io.ctrl.regs.scroll - io.spriteOffset + layerOffset
     UVec2(
       Mux(io.ctrl.regs.flipX, flipped.x, normal.x),
-      Mux(io.ctrl.regs.flipY, flipped.y, normal.y),
+      Mux(io.ctrl.regs.flipY, flipped.y, normal.y)
     )
   }
 

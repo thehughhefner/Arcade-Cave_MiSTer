@@ -117,22 +117,6 @@ object GPU {
   def screenSize: UVec2 = UVec2(Config.SCREEN_WIDTH.U, Config.SCREEN_HEIGHT.U)
 
   /**
-   * Transforms a pixel position to a frame buffer memory address, applying the optional flip
-   * transform.
-   *
-   * @param pos  The pixel position.
-   * @param flip Flips the horizontal axis when asserted.
-   * @return A memory address.
-   */
-  def frameBufferAddr(pos: SVec2, flip: Bool): UInt = {
-    val x = pos.x(Config.FRAME_BUFFER_ADDR_WIDTH_X - 1, 0)
-    val y = pos.y(Config.FRAME_BUFFER_ADDR_WIDTH_Y - 1, 0)
-    val x_ = (Config.SCREEN_WIDTH - 1).U - x
-    val y_ = (Config.SCREEN_HEIGHT - 1).U - y
-    Mux(flip, (y_ * Config.SCREEN_WIDTH.U) + x_, (y * Config.SCREEN_WIDTH.U) + x)
-  }
-
-  /**
    * Transforms a pixel position to a frame buffer memory address, applying the flip and rotate
    * transforms.
    *
@@ -141,7 +125,7 @@ object GPU {
    * @param rotate Rotates the image 90 degrees.
    * @return An address value.
    */
-  def frameBufferAddr(pos: UVec2, flip: Bool, rotate: Bool): UInt = {
+  def frameBufferAddr[T <: Bits with Num[T]](pos: Vec2[T], flip: Bool, rotate: Bool): UInt = {
     val x = pos.x(Config.FRAME_BUFFER_ADDR_WIDTH_X - 1, 0)
     val y = pos.y(Config.FRAME_BUFFER_ADDR_WIDTH_Y - 1, 0)
     val x_ = (Config.SCREEN_WIDTH - 1).U - x
