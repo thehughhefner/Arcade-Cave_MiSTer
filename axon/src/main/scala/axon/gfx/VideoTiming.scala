@@ -63,7 +63,9 @@ case class VideoTimingConfig(clockFreq: Double,
                              vDisplay: Int,
                              vFrontPorch: Int,
                              vRetrace: Int,
-                             vInit: Int = 0) {
+                             vInit: Int = 0,
+                             displayWidth: Int = 9,
+                             offsetWidth: Int = 4) {
   /** Total width in pixels */
   val width = math.round(clockFreq / clockDiv / hFreq).toInt
   /** Total height in pixels */
@@ -83,8 +85,11 @@ case class VideoTimingConfig(clockFreq: Double,
  */
 class VideoTiming(config: VideoTimingConfig) extends Module {
   val io = IO(new Bundle {
+    val display = Input(UVec2(config.displayWidth.W))
+    val frontPorch = Input(UVec2(config.displayWidth.W))
+    val retrace = Input(UVec2(config.displayWidth.W))
     /** CRT offset */
-    val offset = Input(SVec2(OptionsIO.SCREEN_OFFSET_WIDTH.W))
+    val offset = Input(SVec2(config.offsetWidth.W))
     /** Timing port */
     val timing = VideoTimingIO()
   })
@@ -95,14 +100,14 @@ class VideoTiming(config: VideoTimingConfig) extends Module {
   val (y, yWrap) = Counter.static(config.height, enable = clockDivWrap && xWrap, init = config.vInit)
 
   // Horizontal regions
-  val hBeginDisplay = (config.width.S - config.hDisplay.S - config.hFrontPorch.S - config.hRetrace.S + io.offset.x).asUInt
-  val hEndDisplay = (config.width.S - config.hFrontPorch.S - config.hRetrace.S + io.offset.x).asUInt
+  val hBeginDisplay = ((config.width.U - io.display.x - io.frontPorch.x - io.retrace.x).asSInt + io.offset.x).asUInt
+  val hEndDisplay = ((config.width - config.hFrontPorch - config.hRetrace).S + io.offset.x).asUInt
   val hBeginSync = config.width.U - config.hRetrace.U
   val hEndSync = config.width.U
 
   // Vertical regions
-  val vBeginDisplay = (config.height.S - config.vDisplay.S - config.vFrontPorch.S - config.vRetrace.S + io.offset.y).asUInt
-  val vEndDisplay = (config.height.S - config.vFrontPorch.S - config.vRetrace.S + io.offset.y).asUInt
+  val vBeginDisplay = ((config.height.U - io.display.y - io.frontPorch.y - io.retrace.y).asSInt + io.offset.y).asUInt
+  val vEndDisplay = ((config.height - config.vFrontPorch - config.vRetrace).S + io.offset.y).asUInt
   val vBeginSync = config.height.U - config.vRetrace.U
   val vEndSync = config.height.U
 
