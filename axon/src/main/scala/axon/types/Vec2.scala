@@ -36,69 +36,92 @@ import chisel3._
 import chisel3.internal.firrtl.Width
 
 /**
- * Represents an unsigned 2D vector.
+ * Represents a 2D vector.
  *
- * @param xWidth The X data width.
- * @param yWidth The Y data width.
+ * @param gen The type of the elements.
  */
-class UVec2(xWidth: Width, yWidth: Width) extends Bundle {
+sealed class Vec2[T <: Bits with Num[T]] private[axon](private val gen: T) extends Bundle {
   /** Horizontal position */
-  val x = UInt(xWidth)
+  val x: T = gen.cloneType
   /** Vertical position */
-  val y = UInt(yWidth)
+  val y: T = gen.cloneType
 
   /** Addition operator. */
-  def +(that: UVec2) = UVec2(this.x + that.x, this.y + that.y)
-
-  /** Addition operator (expanding width). */
-  def +&(that: UVec2) = UVec2(this.x +& that.x, this.y +& that.y)
+  def +(that: Vec2[T]): Vec2[T] = Vec2(this.x + that.x, this.y + that.y)
 
   /** Subtraction operator. */
-  def -(that: UVec2) = UVec2(this.x - that.x, this.y - that.y)
+  def -(that: Vec2[T]): Vec2[T] = Vec2(this.x - that.x, this.y - that.y)
 
   /** Scalar multiplication operator. */
-  def *(n: UInt) = UVec2(this.x * n, this.y * n)
+  def *(n: T): Vec2[T] = Vec2(this.x * n, this.y * n)
 
   /** Static left shift operator. */
-  def <<(n: Int) = UVec2(this.x << n, this.y << n)
-
-  /** Dynamic left shift operator. */
-  def <<(n: UInt) = UVec2(this.x << n, this.y << n)
+  def <<(n: Int): Vec2[T] = Vec2((this.x << n).asTypeOf(this.x), (this.y << n).asTypeOf(this.y))
 
   /** Static right shift operator. */
-  def >>(n: Int) = UVec2(this.x >> n, this.y >> n)
+  def >>(n: Int): Vec2[T] = Vec2((this.x >> n).asTypeOf(this.x), (this.y >> n).asTypeOf(this.y))
+}
 
-  /** Dynamic right shift operator. */
-  def >>(n: UInt) = UVec2(this.x >> n, this.y >> n)
+object Vec2 {
+  /**
+   * Creates a vector from X and Y values.
+   *
+   * @param x The horizontal position.
+   * @param y The vertical position.
+   * @return A vector.
+   */
+  def apply[T <: Bits with Num[T]](x: T, y: T): Vec2[T] = {
+    val vec = Wire(new Vec2(x))
+    vec.x := x
+    vec.y := y
+    vec
+  }
 }
 
 object UVec2 {
   /**
-   * Creates a signed vector bundle.
+   * Creates an unsigned vector bundle.
    *
    * @param width The data width.
    * @return A bundle.
    */
-  def apply(width: Width): UVec2 = new UVec2(width, width)
+  def apply(width: Width): UVec2 = new Vec2(UInt(width))
 
   /**
    * Creates an unsigned vector from X and Y values.
    *
    * @param x The horizontal position.
    * @param y The vertical position.
-   * @return A unsigned vector.
+   * @return An unsigned vector.
    */
   def apply(x: Bits, y: Bits): UVec2 = {
-    val pos = Wire(new UVec2(x.getWidth.W, y.getWidth.W))
-    pos.x := x.asUInt
-    pos.y := y.asUInt
-    pos
+    val vec = Wire(new Vec2(UInt(x.getWidth.W)))
+    vec.x := x.asUInt
+    vec.y := y.asUInt
+    vec
   }
+}
+
+object SVec2 {
+  /**
+   * Creates a signed vector bundle.
+   *
+   * @param width The data width.
+   * @return A bundle.
+   */
+  def apply(width: Width): SVec2 = new Vec2(SInt(width))
 
   /**
-   * Creates a zero vector.
+   * Creates a signed vector from X and Y values.
    *
-   * @return A unsigned vector.
+   * @param x The horizontal position.
+   * @param y The vertical position.
+   * @return A signed vector.
    */
-  def zero = UVec2(0.U, 0.U)
+  def apply(x: Bits, y: Bits): SVec2 = {
+    val vec = Wire(new Vec2(SInt(x.getWidth.W)))
+    vec.x := x.asSInt
+    vec.y := y.asSInt
+    vec
+  }
 }
