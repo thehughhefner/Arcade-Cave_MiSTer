@@ -60,7 +60,7 @@ class Sprite extends Bundle {
   val zoom = UVec2(Sprite.ZOOM_WIDTH.W)
 
   /** Sprite size in pixels */
-  def size: UVec2 = UVec2(cols, rows) << log2Ceil(Sprite.TILE_SIZE).U
+  def size: UVec2 = UVec2(cols, rows) << log2Ceil(Sprite.TILE_SIZE)
 
   /** Asserted when the sprite is enabled */
   def isEnabled: Bool = cols =/= 0.U && rows =/= 0.U
