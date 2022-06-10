@@ -100,7 +100,7 @@ class IOCTL extends Bundle {
 
   /** Converts video mode data to a synchronous write-only memory interface. */
   def video: AsyncWriteMemIO = {
-    val writeEnable = download && this.index === IOCTL.VIDEO_INDEX.U && !addr(IOCTL.ADDR_WIDTH - 1, 4).orR // ignore higher addresses
+    val writeEnable = download && this.index === IOCTL.VIDEO_INDEX.U
     val mem = Wire(AsyncWriteMemIO(IOCTL.ADDR_WIDTH, IOCTL.DATA_WIDTH))
     mem.wr := writeEnable && wr
     waitReq := writeEnable && mem.waitReq
