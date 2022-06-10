@@ -42,32 +42,17 @@ import chisel3._
  * @param clockFreq   The video clock frequency (Hz).
  * @param clockDiv    The video clock divider.
  * @param hFreq       The horizontal frequency (Hz).
- * @param hDisplay    The horizontal display width.
- * @param hFrontPorch The width of the horizontal front porch region.
- * @param hRetrace    The width of the horizontal retrace region.
- * @param hOffset     The horizontal offset (in pixels) of the beam position.
  * @param hInit       The initial horizontal position (for testing).
  * @param vFreq       The vertical frequency (Hz).
- * @param vDisplay    The vertical display height.
- * @param vFrontPorch The width of the vertical front porch region.
- * @param vRetrace    The width of the vertical retrace region.
- * @param vOffset     The vertical offset (in pixels) of the beam position.
  * @param vInit       The initial vertical position (for testing).
  */
 case class VideoTimingConfig(clockFreq: Double,
                              clockDiv: Int,
                              hFreq: Double,
-                             hDisplay: Int,
-                             hFrontPorch: Int,
-                             hRetrace: Int,
-                             hOffset: Int = 0,
                              hInit: Int = 0,
                              vFreq: Double,
-                             vDisplay: Int,
-                             vFrontPorch: Int,
-                             vRetrace: Int,
-                             vOffset: Int = 0,
-                             vInit: Int = 0) {
+                             vInit: Int = 0,
+                             displayWidth: Int = 9) {
   /** Total width in pixels */
   val width = math.round(clockFreq / clockDiv / hFreq).toInt
   /** Total height in pixels */
@@ -87,6 +72,12 @@ case class VideoTimingConfig(clockFreq: Double,
  */
 class VideoTiming(config: VideoTimingConfig) extends Module {
   val io = IO(new Bundle {
+    /** Display region */
+    val display = Input(UVec2(config.displayWidth.W))
+    /** Front porch region */
+    val frontPorch = Input(UVec2(config.displayWidth.W))
+    /** Retrace region */
+    val retrace = Input(UVec2(config.displayWidth.W))
     /** CRT offset */
     val offset = Input(SVec2(OptionsIO.SCREEN_OFFSET_WIDTH.W))
     /** Timing port */
@@ -99,15 +90,15 @@ class VideoTiming(config: VideoTimingConfig) extends Module {
   val (y, yWrap) = Counter.static(config.height, enable = clockDivWrap && xWrap, init = config.vInit)
 
   // Horizontal regions
-  val hBeginDisplay = (config.width.S - config.hDisplay.S - config.hFrontPorch.S - config.hRetrace.S + io.offset.x).asUInt
-  val hEndDisplay = (config.width.S - config.hFrontPorch.S - config.hRetrace.S + io.offset.x).asUInt
-  val hBeginSync = config.width.U - config.hRetrace.U
+  val hBeginDisplay = (config.width.S + io.offset.x).asUInt - io.display.x - io.frontPorch.x - io.retrace.x
+  val hEndDisplay = (config.width.S + io.offset.x).asUInt - io.frontPorch.x - io.retrace.x
+  val hBeginSync = config.width.U - io.retrace.x
   val hEndSync = config.width.U
 
   // Vertical regions
-  val vBeginDisplay = (config.height.S - config.vDisplay.S - config.vFrontPorch.S - config.vRetrace.S + io.offset.y).asUInt
-  val vEndDisplay = (config.height.S - config.vFrontPorch.S - config.vRetrace.S + io.offset.y).asUInt
-  val vBeginSync = config.height.U - config.vRetrace.U
+  val vBeginDisplay = (config.height.S + io.offset.y).asUInt - io.display.y - io.frontPorch.y - io.retrace.y
+  val vEndDisplay = (config.height.S + io.offset.y).asUInt - io.frontPorch.y - io.retrace.y
+  val vBeginSync = config.height.U - io.retrace.y
   val vEndSync = config.height.U
 
   // Offset the position vector so the display region begins at the origin (i.e. (0, 0))
