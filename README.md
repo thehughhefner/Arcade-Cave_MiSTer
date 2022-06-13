@@ -13,7 +13,7 @@ This project contains the MiSTer core for Cave's first-generation 68k arcade har
 | [**Dangun Feveron**](https://en.wikipedia.org/wiki/Dangun_Feveron)                                                    | Public        |
 | [**Uo Poko**](https://en.wikipedia.org/wiki/Puzzle_Uo_Poko)                                                           | Public        |
 | [**Gunwange**](https://en.wikipedia.org/wiki/Guwange)                                                                 | Public        |
-| [**Gaia Crusaiders**](http://adb.arcadeitalia.net/dettaglio_mame.php?game_name=gaia&arcade_only=0&autosearch=1)       | Private beta  |
+| [**Gaia Crusaders**](http://adb.arcadeitalia.net/dettaglio_mame.php?game_name=gaia&arcade_only=0&autosearch=1)       | Private beta  |
 | [**Thunder Heroes**](http://adb.arcadeitalia.net/dettaglio_mame.php?game_name=theroes&arcade_only=0&autosearch=1)     | Private beta  |
 | [**Air Gallet**](https://en.wikipedia.org/wiki/Air_Gallet)                                                            | Unimplemented |
 | [**Donpachi**](https://en.wikipedia.org/wiki/DonPachi)                                                                | Unimplemented |
